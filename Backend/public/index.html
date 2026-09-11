@@ -1,0 +1,829 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarePlus HMS • Backend Server Control Center & API Management</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%230284c7' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M22 12h-4l-3 9L9 3l-3 9H2'/%3E%3C/svg%3E">
+  <link rel="stylesheet" href="/css/backend-theme.css">
+</head>
+<body>
+
+  <div class="careplus-app">
+
+    <!-- Top Emergency & Server Ribbon matching Frontend Navbar -->
+    <div class="top-ribbon">
+      <div class="max-container top-ribbon-content">
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span class="emergency-pill animate-pulse-glow">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            24/7 Backend Engine
+          </span>
+          <span style="color: var(--color-slate-300); font-size: 0.75rem;">Express REST API &bull; JWT Security &bull; Multi-tier Cache Active</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 1.25rem;">
+          <a href="tel:+18005559000" style="color: var(--color-cyan-400); text-decoration: none; font-weight: 700; display: flex; align-items: center; gap: 0.375rem;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            Helpline: +1 (800) 555-9000
+          </a>
+          <span style="color: var(--color-slate-400); font-family: var(--font-mono); font-size: 0.6875rem;">PORT: 5000</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Sticky Header Navbar matching Frontend -->
+    <header class="main-header">
+      <div class="max-container header-inner">
+        
+        <!-- Logo & Brand -->
+        <a href="/" class="brand-link">
+          <div class="brand-icon-box">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+            </svg>
+          </div>
+          <div>
+            <div class="brand-title">
+              CarePlus <span class="brand-pill">Backend API</span>
+            </div>
+            <div class="brand-sub">Hospital Management Server Control Center</div>
+          </div>
+        </a>
+
+        <!-- Desktop Navigation Tabs -->
+        <nav class="nav-tabs">
+          <button class="tab-btn active" data-tab="overview">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
+            Overview
+          </button>
+          <button class="tab-btn" data-tab="explorer">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            API Explorer
+          </button>
+          <button class="tab-btn" data-tab="patients">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+            Patients
+          </button>
+          <button class="tab-btn" data-tab="appointments">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+            Appointments
+          </button>
+          <button class="tab-btn" data-tab="billing">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/></svg>
+            Billing
+          </button>
+          <button class="tab-btn" data-tab="auth">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            JWT Auth
+          </button>
+        </nav>
+
+        <!-- Right Side User Display & Direct Frontend Launcher -->
+        <div style="display: flex; align-items: center; gap: 0.75rem;">
+          <span id="headerStatusBadge" class="status-pill status-emerald">
+            <span class="animate-pulse-glow">🟢</span> 100% Operational
+          </span>
+          <div id="activeUserDisplay"></div>
+          <a href="http://localhost:5173" target="_blank" class="btn btn-primary btn-sm" title="Open Frontend Web App in new tab">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" x2="21" y1="14" y2="3"/></svg>
+            Open Frontend
+          </a>
+        </div>
+
+      </div>
+    </header>
+
+    <!-- Main Body Container -->
+    <main class="max-container" style="flex: 1; padding-bottom: 3rem;">
+
+      <!-- Hero Banner matching Frontend Landing & Login Banner -->
+      <section class="hero-banner animate-fade-in">
+        <div style="position: relative; z-index: 10;">
+          <span class="hero-tag">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+            Node.js &bull; Express 4.21 &bull; RESTful Architecture
+          </span>
+          <h1 class="hero-title">
+            CarePlus HMS <span style="background: linear-gradient(135deg, #38bdf8, #2dd4bf); -webkit-background-clip: text; -webkit-text-fill-color: transparent;">Backend Command Center</span>
+          </h1>
+          <p class="hero-subtitle">
+            Centralized Hospital Management server powering Patient Authentication, Live Doctor Queues, OPD Token Scheduling, and Itemized Billing with strict 256-bit JWT role validation.
+          </p>
+          
+          <div style="display: flex; flex-wrap: wrap; gap: 0.75rem; margin-top: 1.5rem; align-items: center;">
+            <button class="btn btn-primary" onclick="window.carePlusApp.switchTab('explorer')">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+              Explore API Endpoints
+            </button>
+            <button class="btn btn-secondary" onclick="window.carePlusApp.copyActiveToken()">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+              Copy Active JWT
+            </button>
+            <button class="btn btn-outline" style="background: rgba(255,255,255,0.1); color: white; border-color: rgba(255,255,255,0.2);" onclick="window.carePlusApp.openModal('modalNewAppointment')">
+              + Quick Book OPD Token
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- System KPIs Metric Cards Grid matching AdminDashboard / PatientDashboard -->
+      <section class="cards-grid animate-fade-in">
+        <div class="metric-card">
+          <div>
+            <div class="metric-title">API Server Status</div>
+            <div class="metric-value" style="color: var(--color-emerald-600);">Healthy</div>
+            <div class="metric-sub" style="color: var(--color-slate-500);">Express on Port 5000</div>
+          </div>
+          <div class="metric-icon-box" style="background-color: var(--color-emerald-50); color: var(--color-emerald-600);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div>
+            <div class="metric-title">Active OPD Queue</div>
+            <div class="metric-value" id="metricAppointmentsCount">3</div>
+            <div class="metric-sub" id="metricAppointmentsCompleted" style="color: var(--color-blue-600);">1 Completed</div>
+          </div>
+          <div class="metric-icon-box" style="background-color: var(--color-blue-50); color: var(--color-blue-600);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div>
+            <div class="metric-title">Revenue Collected</div>
+            <div class="metric-value" id="metricRevenueTotal" style="color: var(--color-slate-900);">$305.00</div>
+            <div class="metric-sub" style="color: var(--color-emerald-600);">+ Instant Receipt Sync</div>
+          </div>
+          <div class="metric-icon-box" style="background-color: var(--color-teal-50); color: var(--color-teal-600);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="12" x2="12" y1="2" y2="22"/><path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg>
+          </div>
+        </div>
+
+        <div class="metric-card">
+          <div>
+            <div class="metric-title">Data Storage Layer</div>
+            <div class="metric-value" style="color: var(--color-purple-600); font-size: 1.35rem; margin-top: 0.5rem;">Hybrid Sync</div>
+            <div class="metric-sub" style="color: var(--color-slate-500);">MongoDB &bull; In-Memory</div>
+          </div>
+          <div class="metric-icon-box" style="background-color: var(--color-purple-50); color: var(--color-purple-600);">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><ellipse cx="12" cy="5" rx="9" ry="3"/><path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/><path d="M3 12c0 1.66 4 3 9 3s9-1.34 9-3"/></svg>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 1: OVERVIEW & TELEMETRY -->
+      <section id="tabPane-overview" class="tab-content-pane animate-fade-in">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">1-Click Role Switcher & Authentication Tester</h2>
+              <p class="panel-sub">Simulate requests as different hospital personnel with automatic JWT token attachment.</p>
+            </div>
+          </div>
+
+          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 1rem;">
+            
+            <!-- Patient Demo Card -->
+            <div style="background-color: var(--color-emerald-50); border: 1px solid var(--color-emerald-200); border-radius: var(--radius-2xl); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-size: 1.5rem;">🩺</span>
+                  <span class="status-pill status-emerald">Patient Role</span>
+                </div>
+                <h3 style="font-size: 1rem; font-weight: 800; color: var(--color-slate-900);">Alexander Wright</h3>
+                <p style="font-size: 0.75rem; color: var(--color-slate-600); font-family: var(--font-mono); margin-top: 0.25rem;">patient@careplus-hms.com</p>
+                <p style="font-size: 0.75rem; color: var(--color-slate-500); margin-top: 0.5rem;">Access to personal appointment schedule, medical records, and invoice receipts.</p>
+              </div>
+              <button class="btn btn-emerald btn-sm" style="margin-top: 1rem; width: 100%;" onclick="window.carePlusApp.performDemoLogin('patient')">
+                Login as Patient
+              </button>
+            </div>
+
+            <!-- Doctor Demo Card -->
+            <div style="background-color: var(--color-blue-50); border: 1px solid var(--color-blue-200); border-radius: var(--radius-2xl); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-size: 1.5rem;">👨‍⚕️</span>
+                  <span class="status-pill status-blue">Doctor Role</span>
+                </div>
+                <h3 style="font-size: 1rem; font-weight: 800; color: var(--color-slate-900);">Dr. Sarah Jenkins, MD</h3>
+                <p style="font-size: 0.75rem; color: var(--color-slate-600); font-family: var(--font-mono); margin-top: 0.25rem;">dr.jenkins@careplus-hms.com</p>
+                <p style="font-size: 0.75rem; color: var(--color-slate-500); margin-top: 0.5rem;">Access to cardiology OPD queue, patient consultations, and diagnostic orders.</p>
+              </div>
+              <button class="btn btn-secondary btn-sm" style="margin-top: 1rem; width: 100%;" onclick="window.carePlusApp.performDemoLogin('doctor')">
+                Login as Doctor
+              </button>
+            </div>
+
+            <!-- Receptionist Demo Card -->
+            <div style="background-color: var(--color-amber-50); border: 1px solid var(--color-amber-200); border-radius: var(--radius-2xl); padding: 1.25rem; display: flex; flex-direction: column; justify-content: space-between;">
+              <div>
+                <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
+                  <span style="font-size: 1.5rem;">📋</span>
+                  <span class="status-pill status-amber">Receptionist Role</span>
+                </div>
+                <h3 style="font-size: 1rem; font-weight: 800; color: var(--color-slate-900);">Sarah Davis</h3>
+                <p style="font-size: 0.75rem; color: var(--color-slate-600); font-family: var(--font-mono); margin-top: 0.25rem;">staff@careplus-hms.com</p>
+                <p style="font-size: 0.75rem; color: var(--color-slate-500); margin-top: 0.5rem;">Hospital triage authority, live queue status updates, walk-in tokens, and billing.</p>
+              </div>
+              <button class="btn btn-outline btn-sm" style="margin-top: 1rem; width: 100%; border-color: var(--color-amber-300);" onclick="window.carePlusApp.performDemoLogin('receptionist')">
+                Login as Receptionist
+              </button>
+            </div>
+
+          </div>
+        </div>
+
+        <!-- Architecture & Endpoint Quick Index -->
+        <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+          <div class="panel-card">
+            <div class="panel-header">
+              <div>
+                <h3 class="panel-title">RESTful API Endpoints Directory</h3>
+                <p class="panel-sub">Verified endpoints available in this Express backend server</p>
+              </div>
+              <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.switchTab('explorer')">
+                Open Interactive Runner
+              </button>
+            </div>
+
+            <div class="table-container">
+              <table class="careplus-table">
+                <thead>
+                  <tr>
+                    <th>Method</th>
+                    <th>Route URL</th>
+                    <th>Controller Action</th>
+                    <th>Auth Guard</th>
+                    <th style="text-align: right;">Action</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td><span class="method-badge method-get">GET</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/health</code></td>
+                    <td>System Health & Server Telemetry</td>
+                    <td><span class="status-pill status-emerald">Public</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-post">POST</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/patient/login</code></td>
+                    <td>Role-Enforced JWT Sign-In</td>
+                    <td><span class="status-pill status-emerald">Public</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-post">POST</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/patient/register</code></td>
+                    <td>New Patient Account Creation</td>
+                    <td><span class="status-pill status-emerald">Public</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-get">GET</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/appointments/all</code></td>
+                    <td>Live Hospital Queue & Doctor Roster</td>
+                    <td><span class="status-pill status-purple">Bearer JWT</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-post">POST</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/appointments</code></td>
+                    <td>Book OPD Consultation Token</td>
+                    <td><span class="status-pill status-purple">Bearer JWT</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-put">PUT</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/appointments/:id/status</code></td>
+                    <td>Status Triage (Confirmed, In Consultation, Completed)</td>
+                    <td><span class="status-pill status-purple">Bearer JWT</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-get">GET</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/billing</code></td>
+                    <td>Hospital Invoices & Revenue Ledger</td>
+                    <td><span class="status-pill status-purple">Bearer JWT</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                  <tr>
+                    <td><span class="method-badge method-post">POST</span></td>
+                    <td><code style="font-weight: 700; color: var(--color-slate-900);">/api/billing</code></td>
+                    <td>Issue New Billing Receipt</td>
+                    <td><span class="status-pill status-purple">Bearer JWT</span></td>
+                    <td style="text-align: right;"><button class="btn btn-outline btn-sm" onclick="window.carePlusApp.switchTab('explorer')">Test</button></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 2: INTERACTIVE API EXPLORER -->
+      <section id="tabPane-explorer" class="tab-content-pane" style="display: none;">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Interactive API Explorer & Live Execution Engine</h2>
+              <p class="panel-sub">Run live HTTP requests directly against your local backend with auto-attached JWT headers.</p>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+              <button class="btn btn-secondary btn-sm" onclick="window.carePlusApp.copyActiveToken()">
+                📋 Copy Active Token
+              </button>
+            </div>
+          </div>
+
+          <!-- ENDPOINT 1: Health Check -->
+          <div class="endpoint-card" id="endpoint-health">
+            <div class="endpoint-head">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="method-badge method-get">GET</span>
+                <span class="endpoint-path">/api/health</span>
+                <span style="font-size: 0.75rem; color: var(--color-slate-500);">Server health & timestamp</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="status-pill status-emerald">Public</span>
+                <span style="color: var(--color-slate-400); font-size: 0.75rem;">▾ Click to expand</span>
+              </div>
+            </div>
+            <div class="endpoint-body open" id="runner-health" data-method="GET" data-path="/api/health">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700);">No parameters required</label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.copyCurl('health')">Copy cURL</button>
+                  <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.executeEndpoint('health')">Execute Request</button>
+                </div>
+              </div>
+              <div class="response-container" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-slate-600); text-transform: uppercase;">Response</span>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="response-status status-pill status-emerald">200 OK</span>
+                    <span class="response-time" style="font-size: 0.75rem; color: var(--color-slate-500); font-family: var(--font-mono);">0ms</span>
+                  </div>
+                </div>
+                <pre class="code-block"><code class="response-body"></code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- ENDPOINT 2: Login -->
+          <div class="endpoint-card" id="endpoint-auth-login">
+            <div class="endpoint-head">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="method-badge method-post">POST</span>
+                <span class="endpoint-path">/api/patient/login</span>
+                <span style="font-size: 0.75rem; color: var(--color-slate-500);">Authenticate credentials & receive JWT</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="status-pill status-emerald">Public</span>
+                <span style="color: var(--color-slate-400); font-size: 0.75rem;">▾ Click to expand</span>
+              </div>
+            </div>
+            <div class="endpoint-body" id="runner-auth-login" data-method="POST" data-path="/api/patient/login">
+              <div style="margin-bottom: 0.75rem;">
+                <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">JSON Request Body</label>
+                <textarea class="input-control req-body-input" rows="4" style="font-family: var(--font-mono); font-size: 0.75rem;">{
+  "email": "patient@careplus-hms.com",
+  "password": "demo12345",
+  "role": "patient"
+}</textarea>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.copyCurl('auth-login')">Copy cURL</button>
+                <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.executeEndpoint('auth-login')">Execute Request</button>
+              </div>
+              <div class="response-container" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-slate-600); text-transform: uppercase;">Response</span>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="response-status status-pill status-emerald">200 OK</span>
+                    <span class="response-time" style="font-size: 0.75rem; color: var(--color-slate-500); font-family: var(--font-mono);">0ms</span>
+                  </div>
+                </div>
+                <pre class="code-block"><code class="response-body"></code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- ENDPOINT 3: Get All Appointments -->
+          <div class="endpoint-card" id="endpoint-apt-all">
+            <div class="endpoint-head">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="method-badge method-get">GET</span>
+                <span class="endpoint-path">/api/appointments/all</span>
+                <span style="font-size: 0.75rem; color: var(--color-slate-500);">Retrieve all scheduled hospital appointments</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="status-pill status-purple">Bearer JWT</span>
+                <span style="color: var(--color-slate-400); font-size: 0.75rem;">▾ Click to expand</span>
+              </div>
+            </div>
+            <div class="endpoint-body" id="runner-apt-all" data-method="GET" data-path="/api/appointments/all">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; font-weight: 600; color: var(--color-slate-700);">
+                  <input type="checkbox" class="req-auth-checkbox" checked> Attach Active JWT Authorization Header
+                </label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.copyCurl('apt-all')">Copy cURL</button>
+                  <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.executeEndpoint('apt-all')">Execute Request</button>
+                </div>
+              </div>
+              <div class="response-container" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-slate-600); text-transform: uppercase;">Response</span>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="response-status status-pill status-emerald">200 OK</span>
+                    <span class="response-time" style="font-size: 0.75rem; color: var(--color-slate-500); font-family: var(--font-mono);">0ms</span>
+                  </div>
+                </div>
+                <pre class="code-block"><code class="response-body"></code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- ENDPOINT 4: Book Appointment -->
+          <div class="endpoint-card" id="endpoint-apt-book">
+            <div class="endpoint-head">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="method-badge method-post">POST</span>
+                <span class="endpoint-path">/api/appointments</span>
+                <span style="font-size: 0.75rem; color: var(--color-slate-500);">Book new OPD Consultation Appointment</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="status-pill status-purple">Bearer JWT</span>
+                <span style="color: var(--color-slate-400); font-size: 0.75rem;">▾ Click to expand</span>
+              </div>
+            </div>
+            <div class="endpoint-body" id="runner-apt-book" data-method="POST" data-path="/api/appointments">
+              <div style="margin-bottom: 0.75rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.25rem;">
+                  <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700);">JSON Request Body</label>
+                  <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; font-weight: 600; color: var(--color-slate-700);">
+                    <input type="checkbox" class="req-auth-checkbox" checked> Attach Active JWT
+                  </label>
+                </div>
+                <textarea class="input-control req-body-input" rows="7" style="font-family: var(--font-mono); font-size: 0.75rem;">{
+  "doctor": "Dr. Sarah Jenkins, MD",
+  "department": "Cardiology & Heart Care",
+  "date": "2026-09-15",
+  "timeSlot": "11:30 AM",
+  "type": "Follow-up Consultation",
+  "reason": "Routine hypertension review",
+  "patientName": "Alexander Wright",
+  "patientEmail": "patient@careplus-hms.com"
+}</textarea>
+              </div>
+              <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+                <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.copyCurl('apt-book')">Copy cURL</button>
+                <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.executeEndpoint('apt-book')">Execute Request</button>
+              </div>
+              <div class="response-container" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-slate-600); text-transform: uppercase;">Response</span>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="response-status status-pill status-emerald">200 OK</span>
+                    <span class="response-time" style="font-size: 0.75rem; color: var(--color-slate-500); font-family: var(--font-mono);">0ms</span>
+                  </div>
+                </div>
+                <pre class="code-block"><code class="response-body"></code></pre>
+              </div>
+            </div>
+          </div>
+
+          <!-- ENDPOINT 5: Billing Get -->
+          <div class="endpoint-card" id="endpoint-bill-get">
+            <div class="endpoint-head">
+              <div style="display: flex; align-items: center; gap: 0.75rem;">
+                <span class="method-badge method-get">GET</span>
+                <span class="endpoint-path">/api/billing</span>
+                <span style="font-size: 0.75rem; color: var(--color-slate-500);">Retrieve all billing records and receipts</span>
+              </div>
+              <div style="display: flex; align-items: center; gap: 0.5rem;">
+                <span class="status-pill status-purple">Bearer JWT</span>
+                <span style="color: var(--color-slate-400); font-size: 0.75rem;">▾ Click to expand</span>
+              </div>
+            </div>
+            <div class="endpoint-body" id="runner-bill-get" data-method="GET" data-path="/api/billing">
+              <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                <label style="display: flex; align-items: center; gap: 0.375rem; font-size: 0.75rem; font-weight: 600; color: var(--color-slate-700);">
+                  <input type="checkbox" class="req-auth-checkbox" checked> Attach Active JWT
+                </label>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.copyCurl('bill-get')">Copy cURL</button>
+                  <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.executeEndpoint('bill-get')">Execute Request</button>
+                </div>
+              </div>
+              <div class="response-container" style="display: none; margin-top: 1rem;">
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                  <span style="font-size: 0.75rem; font-weight: 800; color: var(--color-slate-600); text-transform: uppercase;">Response</span>
+                  <div style="display: flex; gap: 0.5rem; align-items: center;">
+                    <span class="response-status status-pill status-emerald">200 OK</span>
+                    <span class="response-time" style="font-size: 0.75rem; color: var(--color-slate-500); font-family: var(--font-mono);">0ms</span>
+                  </div>
+                </div>
+                <pre class="code-block"><code class="response-body"></code></pre>
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- TAB 3: PATIENTS ROSTER -->
+      <section id="tabPane-patients" class="tab-content-pane" style="display: none;">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Registered Patients & Staff Profiles</h2>
+              <p class="panel-sub">Inspect registered accounts with secure password hash indicators.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem;">
+              <input type="text" id="patientSearchInput" class="input-control" placeholder="Search patient name, email or ID..." style="max-width: 260px;">
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="careplus-table">
+              <thead>
+                <tr>
+                  <th>Patient Profile</th>
+                  <th>Email Address</th>
+                  <th>System Role</th>
+                  <th>Contact Phone</th>
+                  <th>Blood Group</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="patientsTableBody">
+                <!-- Dynamically Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 4: APPOINTMENTS QUEUE -->
+      <section id="tabPane-appointments" class="tab-content-pane" style="display: none;">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Live Hospital OPD Appointments Queue</h2>
+              <p class="panel-sub">Real-time status tracking with instant triage transitions.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="appointmentSearchInput" class="input-control" placeholder="Search token, patient, doctor..." style="max-width: 220px;">
+              <select id="appointmentStatusFilter" class="select-control" style="width: auto;">
+                <option value="all">All Statuses</option>
+                <option value="Upcoming">Upcoming</option>
+                <option value="Confirmed">Confirmed</option>
+                <option value="In Consultation">In Consultation</option>
+                <option value="Completed">Completed</option>
+                <option value="Cancelled">Cancelled</option>
+              </select>
+              <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.openModal('modalNewAppointment')">
+                + Book New Token
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="careplus-table">
+              <thead>
+                <tr>
+                  <th>Token ID</th>
+                  <th>Patient Details</th>
+                  <th>Doctor & Dept</th>
+                  <th>Schedule</th>
+                  <th>Current Status</th>
+                  <th style="text-align: right;">Update Status</th>
+                </tr>
+              </thead>
+              <tbody id="appointmentsTableBody">
+                <!-- Dynamically Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 5: BILLING & INVOICES -->
+      <section id="tabPane-billing" class="tab-content-pane" style="display: none;">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">Hospital Billing & Revenue Management</h2>
+              <p class="panel-sub">Issue itemized invoices and mark payments as collected.</p>
+            </div>
+            <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+              <input type="text" id="billingSearchInput" class="input-control" placeholder="Search invoice, patient..." style="max-width: 220px;">
+              <select id="billingStatusFilter" class="select-control" style="width: auto;">
+                <option value="all">All Statuses</option>
+                <option value="Paid">Paid</option>
+                <option value="Pending">Pending</option>
+              </select>
+              <button class="btn btn-emerald btn-sm" onclick="window.carePlusApp.openModal('modalNewInvoice')">
+                + Issue Invoice
+              </button>
+            </div>
+          </div>
+
+          <div class="table-container">
+            <table class="careplus-table">
+              <thead>
+                <tr>
+                  <th>Invoice ID</th>
+                  <th>Patient Details</th>
+                  <th>Care Item / Description</th>
+                  <th>Amount</th>
+                  <th>Payment Method</th>
+                  <th>Status</th>
+                  <th style="text-align: right;">Action</th>
+                </tr>
+              </thead>
+              <tbody id="billingTableBody">
+                <!-- Dynamically Populated -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- TAB 6: JWT AUTH & SECURITY -->
+      <section id="tabPane-auth" class="tab-content-pane" style="display: none;">
+        <div class="panel-card">
+          <div class="panel-header">
+            <div>
+              <h2 class="panel-title">JWT Security & Token Session Inspector</h2>
+              <p class="panel-sub">HMAC SHA-256 encrypted session tokens governing API security.</p>
+            </div>
+            <button class="btn btn-primary btn-sm" onclick="window.carePlusApp.copyActiveToken()">
+              Copy Active Token
+            </button>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr; gap: 1.5rem;">
+            <div style="background-color: var(--color-slate-900); padding: 1.5rem; border-radius: var(--radius-2xl); color: #f8fafc; font-family: var(--font-mono); font-size: 0.8125rem; word-break: break-all; border: 1px solid var(--color-slate-800);">
+              <div style="color: var(--color-cyan-400); font-weight: 700; margin-bottom: 0.5rem; font-family: var(--font-sans); font-size: 0.75rem; text-transform: uppercase;">Active Authorization Bearer Token</div>
+              <div id="authRawTokenDisplay" style="color: #38bdf8; line-height: 1.6;">eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...</div>
+            </div>
+
+            <div style="background-color: var(--color-blue-50); border: 1px solid var(--color-blue-200); padding: 1.5rem; border-radius: var(--radius-2xl);">
+              <h3 style="font-weight: 800; font-size: 0.9375rem; color: var(--color-blue-900); margin-bottom: 0.5rem;">🔐 Strict Role Enforcement Overview</h3>
+              <p style="font-size: 0.8125rem; color: var(--color-slate-700); line-height: 1.6;">
+                Every API endpoint checks the decrypted token payload against the requested resource. For instance, attempting to view patient medical files with a mismatched role generates an HTTP 403 Forbidden status directly from the <code>authMiddleware.js</code> layer.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Global Footer matching Frontend -->
+    <footer style="background-color: var(--color-slate-900); color: var(--color-slate-400); font-size: 0.75rem; padding: 2rem 0; border-top: 1px solid var(--color-slate-800); margin-top: auto;">
+      <div class="max-container" style="display: flex; flex-direction: column; gap: 1rem; align-items: center; justify-content: space-between;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+          <div style="width: 1.5rem; height: 1.5rem; border-radius: 0.5rem; background: var(--gradient-primary); display: flex; align-items: center; justify-content: center; color: white;">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+          </div>
+          <span style="font-weight: 800; color: white;">CarePlus HMS</span>
+          <span>&bull; Full-Stack Hospital Management System</span>
+        </div>
+        <div style="font-size: 0.6875rem; color: var(--color-slate-500);">
+          &copy; 2026 CarePlus Health Systems Inc. All APIs and protected routes strictly verified.
+        </div>
+      </div>
+    </footer>
+
+    <!-- MODAL 1: Book New Appointment -->
+    <div class="modal-backdrop" id="modalNewAppointment">
+      <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--color-slate-900);">Book OPD Appointment Token</h3>
+          <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.closeModal('modalNewAppointment')">✕</button>
+        </div>
+        <form id="formNewAppointment" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Patient Full Name</label>
+            <input type="text" name="patientName" class="input-control" value="Alexander Wright" required>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Patient Email</label>
+            <input type="email" name="patientEmail" class="input-control" value="patient@careplus-hms.com" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Doctor</label>
+              <select name="doctor" class="select-control">
+                <option value="Dr. Sarah Jenkins, MD">Dr. Sarah Jenkins, MD (Cardiology)</option>
+                <option value="Dr. Michael Chen, MD">Dr. Michael Chen, MD (Neurology)</option>
+                <option value="Dr. Emily Rodriguez, MD">Dr. Emily Rodriguez, MD (Pediatrics)</option>
+              </select>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Department</label>
+              <select name="department" class="select-control">
+                <option value="Cardiology & Heart Care">Cardiology & Heart Care</option>
+                <option value="Neurology & Brain Sciences">Neurology & Brain Sciences</option>
+                <option value="Pediatrics & Child Health">Pediatrics & Child Health</option>
+              </select>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Appointment Date</label>
+              <input type="date" name="date" class="input-control" value="2026-09-16">
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Time Slot</label>
+              <select name="timeSlot" class="select-control">
+                <option value="09:30 AM">09:30 AM</option>
+                <option value="11:00 AM">11:00 AM</option>
+                <option value="02:30 PM">02:30 PM</option>
+                <option value="04:00 PM">04:00 PM</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Consultation Type</label>
+            <input type="text" name="type" class="input-control" value="OPD Specialist Consultation">
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Reason for Visit</label>
+            <input type="text" name="reason" class="input-control" value="Follow-up diagnostic evaluation">
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+            <button type="button" class="btn btn-outline" onclick="window.carePlusApp.closeModal('modalNewAppointment')">Cancel</button>
+            <button type="submit" class="btn btn-primary">Book Token</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- MODAL 2: Create New Invoice -->
+    <div class="modal-backdrop" id="modalNewInvoice">
+      <div class="modal-content">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.25rem;">
+          <h3 style="font-size: 1.125rem; font-weight: 800; color: var(--color-slate-900);">Issue New Billing Receipt</h3>
+          <button class="btn btn-outline btn-sm" onclick="window.carePlusApp.closeModal('modalNewInvoice')">✕</button>
+        </div>
+        <form id="formNewInvoice" style="display: flex; flex-direction: column; gap: 1rem;">
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Patient Full Name</label>
+            <input type="text" name="patientName" class="input-control" value="Alexander Wright" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Patient ID</label>
+              <input type="text" name="patientId" class="input-control" value="PT-9801" required>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Patient Email</label>
+              <input type="email" name="patientEmail" class="input-control" value="patient@careplus-hms.com" required>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Description / Care Item</label>
+            <input type="text" name="description" class="input-control" value="Cardiology Comprehensive Diagnostic Panel" required>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem;">
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Amount ($ USD)</label>
+              <input type="number" step="0.01" name="amount" class="input-control" value="220.00" required>
+            </div>
+            <div>
+              <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Payment Method</label>
+              <select name="method" class="select-control">
+                <option value="Cash / Reception">Cash / Reception</option>
+                <option value="Credit Card">Credit Card</option>
+                <option value="Insurance Claim">Insurance Claim</option>
+              </select>
+            </div>
+          </div>
+          <div>
+            <label style="font-size: 0.75rem; font-weight: 700; color: var(--color-slate-700); display: block; margin-bottom: 0.25rem;">Payment Status</label>
+            <select name="status" class="select-control">
+              <option value="Paid">Paid (Issue Receipt)</option>
+              <option value="Pending">Pending (Awaiting Collection)</option>
+            </select>
+          </div>
+          <div style="display: flex; justify-content: flex-end; gap: 0.5rem; margin-top: 0.5rem;">
+            <button type="button" class="btn btn-outline" onclick="window.carePlusApp.closeModal('modalNewInvoice')">Cancel</button>
+            <button type="submit" class="btn btn-emerald">Issue Invoice</button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/js/backend-app.js"></script>
+</body>
+</html>
