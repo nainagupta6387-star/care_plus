@@ -15,8 +15,8 @@ router.post('/register', registerPatient);
 router.post('/login', loginPatient);
 router.post('/logout', logoutPatient);
 
-// Protected Patient Routes (Requires JWT token & 'patient' role)
-router.get('/profile', protect, authorizeRoles('patient'), getPatientProfile);
-router.put('/profile', protect, authorizeRoles('patient'), updatePatientProfile);
+// Protected Profile Routes (Requires JWT token for any authorized role)
+router.get('/profile', protect, getPatientProfile);
+router.put('/profile', protect, updatePatientProfile);
 
 export default router;

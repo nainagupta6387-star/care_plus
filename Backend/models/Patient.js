@@ -53,6 +53,34 @@ const patientSchema = new mongoose.Schema(
       type: String,
       default: '',
     },
+    address: {
+      type: String,
+      default: '',
+    },
+    specialty: {
+      type: String,
+      default: 'General Practitioner',
+    },
+    department: {
+      type: String,
+      default: 'General Medicine',
+    },
+    experience: {
+      type: String,
+      default: '10+ Years Experience',
+    },
+    education: {
+      type: String,
+      default: 'MD, Medical University',
+    },
+    bio: {
+      type: String,
+      default: '',
+    },
+    roomNumber: {
+      type: String,
+      default: 'OPD-102',
+    },
   },
   {
     timestamps: true,

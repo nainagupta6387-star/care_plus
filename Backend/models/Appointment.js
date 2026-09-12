@@ -41,8 +41,27 @@ const appointmentSchema = new mongoose.Schema(
     },
     status: {
       type: String,
-      enum: ['Upcoming', 'Confirmed', 'In Consultation', 'Completed', 'Rescheduled', 'Cancelled'],
+      enum: ['Upcoming', 'Confirmed', 'Waiting', 'In Consultation', 'Completed', 'Rescheduled', 'Cancelled'],
       default: 'Upcoming',
+    },
+    priority: {
+      type: String,
+      enum: ['Routine', 'Normal', 'High', 'Emergency'],
+      default: 'Normal',
+    },
+    age: {
+      type: Number,
+      default: 34,
+    },
+    gender: {
+      type: String,
+      default: 'Male',
+    },
+    vitals: {
+      bloodPressure: { type: String, default: '120 / 80 mmHg' },
+      heartRate: { type: String, default: '72 BPM' },
+      spo2: { type: String, default: '99% SpO2' },
+      temperature: { type: String, default: '98.6 °F' },
     },
     type: {
       type: String,
@@ -58,6 +77,6 @@ const appointmentSchema = new mongoose.Schema(
   }
 );
 
-const Appointment = mongoose.model('Appointment', appointmentSchema);
+const Appointment = mongoose.models.Appointment || mongoose.model('Appointment', appointmentSchema);
 
 export default Appointment;

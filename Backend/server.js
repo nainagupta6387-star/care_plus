@@ -7,6 +7,7 @@ import { connectDB } from './config/db.js';
 import patientRoutes from './routes/patientRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
+import prescriptionRoutes from './routes/prescriptionRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -50,6 +51,7 @@ app.get(['/', '/admin', '/docs', '/dashboard', '/api-explorer'], (req, res) => {
 app.use('/api/patient', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/billing', billingRoutes);
+app.use('/api/prescriptions', prescriptionRoutes);
 
 // Global Error Handler
 app.use(errorHandler);

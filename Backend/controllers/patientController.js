@@ -17,7 +17,8 @@ export const memoryPatients = [
     gender: 'Male',
     bloodType: 'O+',
     allergies: ['Penicillin', 'Peanuts'],
-    emergencyContact: 'Eleanor Wright (+1 555 987-6543)'
+    emergencyContact: 'Eleanor Wright (+1 555 987-6543)',
+    address: '742 Evergreen Terrace, Medical District'
   },
   {
     _id: 'mem-doc-9001',
@@ -29,7 +30,14 @@ export const memoryPatients = [
     role: 'doctor',
     age: 42,
     gender: 'Female',
-    bloodType: 'A+'
+    bloodType: 'A+',
+    specialty: 'Chief of Cardiology',
+    department: 'Cardiology & Heart Care',
+    experience: '16+ Years Experience',
+    education: 'Harvard Medical School',
+    roomNumber: 'OPD-102',
+    bio: 'Board-certified cardiologist specializing in advanced interventional cardiac care, preventive cardiology, and acute telemetry.',
+    address: 'Suite 402, CarePlus Heart Tower'
   },
   {
     _id: 'mem-rec-4091',
@@ -41,7 +49,8 @@ export const memoryPatients = [
     role: 'receptionist',
     age: 29,
     gender: 'Female',
-    bloodType: 'B+'
+    bloodType: 'B+',
+    department: 'Central OPD & Registration Desk'
   }
 ];
 
@@ -261,48 +270,80 @@ export const getPatientProfile = async (req, res) => {
   });
 };
 
-// @desc    Update patient profile (Protected)
+// @desc    Update patient / doctor / user profile (Protected)
 // @route   PUT /api/patient/profile
-// @access  Private (Patient Role)
+// @access  Private
 export const updatePatientProfile = async (req, res, next) => {
   try {
-    const { name, phone, age, address, emergencyContact } = req.body;
+    const {
+      name,
+      phone,
+      age,
+      address,
+      gender,
+      bloodType,
+      emergencyContact,
+      specialty,
+      department,
+      experience,
+      education,
+      bio,
+      roomNumber
+    } = req.body;
 
-    if (req.user._id && typeof req.user.save === 'function') {
-      const patient = await Patient.findById(req.user._id);
+    const userId = req.user?._id || req.user?.id;
+
+    if (req.user && typeof req.user.save === 'function') {
+      const patient = await Patient.findById(userId);
       if (patient) {
-        patient.name = name || patient.name;
-        patient.phone = phone || patient.phone;
-        patient.age = age || patient.age;
-        patient.address = address || patient.address;
-        patient.emergencyContact = emergencyContact || patient.emergencyContact;
+        if (name !== undefined) patient.name = name;
+        if (phone !== undefined) patient.phone = phone;
+        if (age !== undefined) patient.age = age;
+        if (gender !== undefined) patient.gender = gender;
+        if (bloodType !== undefined) patient.bloodType = bloodType;
+        if (address !== undefined) patient.address = address;
+        if (emergencyContact !== undefined) patient.emergencyContact = emergencyContact;
+        if (specialty !== undefined) patient.specialty = specialty;
+        if (department !== undefined) patient.department = department;
+        if (experience !== undefined) patient.experience = experience;
+        if (education !== undefined) patient.education = education;
+        if (bio !== undefined) patient.bio = bio;
+        if (roomNumber !== undefined) patient.roomNumber = roomNumber;
 
         const updatedPatient = await patient.save();
         return res.json({
           success: true,
-          message: 'Patient profile updated successfully',
+          message: 'Profile updated successfully',
           patient: updatedPatient,
         });
       }
     }
 
     // Memory Store Update
-    const memIndex = memoryPatients.findIndex(p => p._id === req.user._id);
+    const memIndex = memoryPatients.findIndex(p => p._id === userId || p.patientId === userId || p.email === req.user?.email);
     if (memIndex !== -1) {
-      memoryPatients[memIndex].name = name || memoryPatients[memIndex].name;
-      memoryPatients[memIndex].phone = phone || memoryPatients[memIndex].phone;
-      memoryPatients[memIndex].age = age || memoryPatients[memIndex].age;
-      memoryPatients[memIndex].address = address || memoryPatients[memIndex].address;
-      memoryPatients[memIndex].emergencyContact = emergencyContact || memoryPatients[memIndex].emergencyContact;
+      if (name !== undefined) memoryPatients[memIndex].name = name;
+      if (phone !== undefined) memoryPatients[memIndex].phone = phone;
+      if (age !== undefined) memoryPatients[memIndex].age = age;
+      if (gender !== undefined) memoryPatients[memIndex].gender = gender;
+      if (bloodType !== undefined) memoryPatients[memIndex].bloodType = bloodType;
+      if (address !== undefined) memoryPatients[memIndex].address = address;
+      if (emergencyContact !== undefined) memoryPatients[memIndex].emergencyContact = emergencyContact;
+      if (specialty !== undefined) memoryPatients[memIndex].specialty = specialty;
+      if (department !== undefined) memoryPatients[memIndex].department = department;
+      if (experience !== undefined) memoryPatients[memIndex].experience = experience;
+      if (education !== undefined) memoryPatients[memIndex].education = education;
+      if (bio !== undefined) memoryPatients[memIndex].bio = bio;
+      if (roomNumber !== undefined) memoryPatients[memIndex].roomNumber = roomNumber;
 
       return res.json({
         success: true,
-        message: 'Patient profile updated successfully',
+        message: 'Profile updated successfully',
         patient: memoryPatients[memIndex],
       });
     }
 
-    res.status(404).json({ success: false, message: 'Patient record not found' });
+    res.status(404).json({ success: false, message: 'User record not found' });
   } catch (error) {
     next(error);
   }

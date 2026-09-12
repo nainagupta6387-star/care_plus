@@ -1,21 +1,22 @@
+
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { 
-  Activity, 
-  Calendar, 
-  Clock, 
-  FileText, 
-  Pill, 
-  CreditCard, 
-  User, 
-  Bell, 
-  LogOut, 
-  Plus, 
-  CheckCircle2, 
-  AlertCircle, 
-  Download, 
-  Printer, 
-  X, 
+import {
+  Activity,
+  Calendar,
+  Clock,
+  FileText,
+  Pill,
+  CreditCard,
+  User,
+  Bell,
+  LogOut,
+  Plus,
+  CheckCircle2,
+  AlertCircle,
+  Download,
+  Printer,
+  X,
   Menu,
   ChevronRight
 } from 'lucide-react';
@@ -186,14 +187,14 @@ const PatientDashboard = () => {
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
-      
+
       {/* Top Navbar - Clean Light Theme matching Landing Page Header */}
       <header className="bg-white/95 backdrop-blur-md sticky top-0 z-40 border-b border-slate-200/80 shadow-xs">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-          
+
           {/* Mobile Menu & Logo */}
           <div className="flex items-center space-x-3">
-            <button 
+            <button
               onClick={() => setSidebarOpen(!sidebarOpen)}
               className="lg:hidden p-2 rounded-xl text-slate-600 hover:bg-slate-100 hover:text-slate-900 transition-colors"
               aria-label="Toggle menu"
@@ -216,7 +217,7 @@ const PatientDashboard = () => {
 
           {/* Right Header Actions */}
           <div className="flex items-center space-x-3 sm:space-x-4">
-            
+
             {/* Quick Book CTA */}
             <button
               onClick={() => setBookingModalOpen(true)}
@@ -228,7 +229,7 @@ const PatientDashboard = () => {
 
             {/* Notification Bell */}
             <div className="relative">
-              <button 
+              <button
                 onClick={() => setNotifOpen(!notifOpen)}
                 className="p-2.5 rounded-xl bg-slate-100 hover:bg-slate-200/80 text-slate-700 relative transition-colors border border-slate-200/80"
                 aria-label="Notifications"
@@ -246,7 +247,7 @@ const PatientDashboard = () => {
                 <div className="absolute right-0 mt-2 w-80 sm:w-96 bg-white rounded-2xl shadow-xl border border-slate-200 p-4 z-50 animate-in fade-in duration-200 text-slate-800">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100">
                     <h4 className="font-bold text-sm text-slate-900">Notifications ({notifications.length})</h4>
-                    <button 
+                    <button
                       onClick={() => setNotifications(notifications.map(n => ({ ...n, read: true })))}
                       className="text-[11px] font-bold text-blue-600 hover:text-blue-700 hover:underline"
                     >
@@ -286,17 +287,16 @@ const PatientDashboard = () => {
 
       {/* Main Container with Sidebar */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 w-full flex-1 grid grid-cols-1 lg:grid-cols-12 gap-8">
-        
+
         {/* Sidebar Navigation */}
-        <aside className={`lg:col-span-3 bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-6 ${
-          sidebarOpen ? 'block' : 'hidden lg:block'
-        }`}>
+        <aside className={`lg:col-span-3 bg-white rounded-3xl p-5 border border-slate-200/90 shadow-sm flex flex-col justify-between space-y-6 ${sidebarOpen ? 'block' : 'hidden lg:block'
+          }`}>
           <div className="space-y-6">
-            
+
             {/* Patient Header Card - Light Blue Theme */}
             <div className="p-4 rounded-2xl bg-gradient-to-br from-blue-50/90 via-sky-50/40 to-indigo-50/50 border border-blue-100/80 flex items-center space-x-3">
               <div className="w-11 h-11 rounded-full bg-gradient-to-r from-blue-600 to-teal-600 text-white flex items-center justify-center font-bold text-lg shadow-sm shadow-blue-500/20">
-                {currentPatient.name ? currentPatient.name.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase() : 'PT'}
+                {currentPatient.name ? currentPatient.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'PT'}
               </div>
               <div>
                 <h4 className="font-bold text-slate-900 text-sm leading-tight">{currentPatient.name}</h4>
@@ -311,11 +311,10 @@ const PatientDashboard = () => {
             <nav className="space-y-1.5 text-sm font-semibold text-slate-600">
               <button
                 onClick={() => { setActiveTab('overview'); setSidebarOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
-                  activeTab === 'overview' 
-                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs' 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'overview'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs'
                     : 'hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Activity className={`w-5 h-5 ${activeTab === 'overview' ? 'text-blue-600 stroke-[2.5]' : 'text-slate-500'}`} />
                 <span>Dashboard Overview</span>
@@ -323,11 +322,10 @@ const PatientDashboard = () => {
 
               <button
                 onClick={() => { setActiveTab('appointments'); setSidebarOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
-                  activeTab === 'appointments' 
-                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs' 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'appointments'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs'
                     : 'hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Calendar className={`w-5 h-5 ${activeTab === 'appointments' ? 'text-blue-600 stroke-[2.5]' : 'text-slate-500'}`} />
                 <span>My Appointments</span>
@@ -335,11 +333,10 @@ const PatientDashboard = () => {
 
               <button
                 onClick={() => { setActiveTab('prescriptions'); setSidebarOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
-                  activeTab === 'prescriptions' 
-                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs' 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'prescriptions'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs'
                     : 'hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <Pill className={`w-5 h-5 ${activeTab === 'prescriptions' ? 'text-blue-600 stroke-[2.5]' : 'text-slate-500'}`} />
                 <span>My Prescriptions</span>
@@ -347,11 +344,10 @@ const PatientDashboard = () => {
 
               <button
                 onClick={() => { setActiveTab('reports'); setSidebarOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
-                  activeTab === 'reports' 
-                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs' 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'reports'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs'
                     : 'hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <FileText className={`w-5 h-5 ${activeTab === 'reports' ? 'text-blue-600 stroke-[2.5]' : 'text-slate-500'}`} />
                 <span>Medical Reports</span>
@@ -359,11 +355,10 @@ const PatientDashboard = () => {
 
               <button
                 onClick={() => { setActiveTab('billing'); setSidebarOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
-                  activeTab === 'billing' 
-                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs' 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'billing'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs'
                     : 'hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <CreditCard className={`w-5 h-5 ${activeTab === 'billing' ? 'text-blue-600 stroke-[2.5]' : 'text-slate-500'}`} />
                 <span>Billing & Invoices</span>
@@ -371,11 +366,10 @@ const PatientDashboard = () => {
 
               <button
                 onClick={() => { setActiveTab('profile'); setSidebarOpen(false); }}
-                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${
-                  activeTab === 'profile' 
-                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs' 
+                className={`w-full flex items-center space-x-3 px-4 py-3 rounded-2xl transition-all ${activeTab === 'profile'
+                    ? 'bg-blue-50 text-blue-700 font-bold border border-blue-200/70 shadow-xs'
                     : 'hover:bg-slate-50 hover:text-slate-900'
-                }`}
+                  }`}
               >
                 <User className={`w-5 h-5 ${activeTab === 'profile' ? 'text-blue-600 stroke-[2.5]' : 'text-slate-500'}`} />
                 <span>Patient Profile</span>
@@ -398,14 +392,14 @@ const PatientDashboard = () => {
 
         {/* Main Content Area */}
         <main className="lg:col-span-9 space-y-6">
-          
+
           {/* TAB 1: OVERVIEW */}
           {activeTab === 'overview' && (
             <div className="space-y-6 animate-in fade-in duration-200">
-              
+
               {/* Quick Stats Cards */}
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-                
+
                 <div className="bg-white p-5 rounded-3xl border border-slate-200/90 shadow-sm flex items-center justify-between hover:border-blue-300 transition-all">
                   <div>
                     <p className="text-xs font-bold text-slate-500 uppercase tracking-wider">Total Appointments</p>
@@ -489,12 +483,12 @@ const PatientDashboard = () => {
 
               {/* Recent Reports & Active Prescriptions Split Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                
+
                 {/* Active Prescriptions Box */}
                 <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-slate-900 text-base">Active Prescriptions</h4>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('prescriptions')}
                       className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
                     >
@@ -521,7 +515,7 @@ const PatientDashboard = () => {
                 <div className="bg-white p-6 rounded-3xl border border-slate-200/90 shadow-sm space-y-4">
                   <div className="flex items-center justify-between">
                     <h4 className="font-bold text-slate-900 text-base">Latest Diagnostic Reports</h4>
-                    <button 
+                    <button
                       onClick={() => setActiveTab('reports')}
                       className="text-xs font-bold text-blue-600 hover:text-blue-700 hover:underline"
                     >
@@ -536,7 +530,7 @@ const PatientDashboard = () => {
                           <p className="font-bold text-slate-900 text-sm">{rep.title}</p>
                           <p className="text-xs text-slate-500">{rep.date} • {rep.department}</p>
                         </div>
-                        <button 
+                        <button
                           onClick={() => setViewReportModal(rep)}
                           className="px-3 py-1.5 rounded-xl bg-blue-50 text-blue-700 border border-blue-100 text-xs font-bold hover:bg-blue-600 hover:text-white transition-colors"
                         >
@@ -555,7 +549,7 @@ const PatientDashboard = () => {
           {/* TAB 2: APPOINTMENTS */}
           {activeTab === 'appointments' && (
             <div className="space-y-6 animate-in fade-in duration-200">
-              
+
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                 <div>
                   <h3 className="text-2xl font-extrabold text-slate-900">My Appointments</h3>
@@ -582,15 +576,14 @@ const PatientDashboard = () => {
                         <div>
                           <div className="flex items-center space-x-2">
                             <h4 className="font-bold text-slate-900 text-base">{apt.doctor}</h4>
-                            <span className={`px-2.5 py-0.5 text-[10px] font-extrabold rounded-full uppercase ${
-                              apt.status === 'Completed' 
-                                ? 'bg-purple-100 text-purple-800' 
+                            <span className={`px-2.5 py-0.5 text-[10px] font-extrabold rounded-full uppercase ${apt.status === 'Completed'
+                                ? 'bg-purple-100 text-purple-800'
                                 : apt.status === 'Cancelled'
-                                ? 'bg-rose-100 text-rose-800'
-                                : apt.status === 'In Consultation'
-                                ? 'bg-blue-100 text-blue-800 border border-blue-200 animate-pulse'
-                                : 'bg-emerald-100 text-emerald-800'
-                            }`}>
+                                  ? 'bg-rose-100 text-rose-800'
+                                  : apt.status === 'In Consultation'
+                                    ? 'bg-blue-100 text-blue-800 border border-blue-200 animate-pulse'
+                                    : 'bg-emerald-100 text-emerald-800'
+                              }`}>
                               {apt.status}
                             </span>
                           </div>
@@ -767,10 +760,10 @@ const PatientDashboard = () => {
               </div>
 
               <div className="bg-white p-8 rounded-3xl border border-slate-200/90 shadow-sm space-y-6">
-                
+
                 <div className="flex items-center space-x-6 pb-6 border-b border-slate-100">
                   <div className="w-20 h-20 rounded-2xl bg-gradient-to-r from-blue-600 to-teal-600 text-white font-extrabold text-2xl flex items-center justify-center shadow-lg shadow-blue-500/20 ring-4 ring-blue-50">
-                    {currentPatient.name ? currentPatient.name.split(' ').map(n=>n[0]).join('').substring(0, 2).toUpperCase() : 'PT'}
+                    {currentPatient.name ? currentPatient.name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase() : 'PT'}
                   </div>
                   <div>
                     <h4 className="text-xl font-extrabold text-slate-900">{currentPatient.name}</h4>

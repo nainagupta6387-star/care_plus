@@ -10,38 +10,92 @@ export const memoryAppointments = [
     patientEmail: 'patient@careplus-hms.com',
     doctor: 'Dr. Sarah Jenkins, MD',
     department: 'Cardiology & Heart Care',
-    date: '2026-09-06',
+    date: new Date().toISOString().split('T')[0],
     timeSlot: '10:30 AM',
-    status: 'Upcoming',
+    status: 'In Consultation',
     type: 'Cardiology Follow-up',
+    priority: 'High',
+    age: 34,
+    gender: 'Male',
+    vitals: {
+      bloodPressure: '120 / 80 mmHg',
+      heartRate: '72 BPM',
+      spo2: '99% SpO2',
+      temperature: '98.4 °F'
+    },
+    reason: 'Follow-up on hyperlipidemia & mild hypertension',
     createdAt: new Date().toISOString()
   },
   {
     _id: 'mem-apt-1090',
     tokenNumber: 'OPD-1090',
-    patientId: 'PT-9801',
-    patientName: 'Alexander Wright',
-    patientEmail: 'patient@careplus-hms.com',
-    doctor: 'Dr. Michael Chen, MD',
-    department: 'Neurology & Brain Sciences',
-    date: '2026-09-12',
+    patientId: 'PT-9802',
+    patientName: 'Maria Garcia',
+    patientEmail: 'maria.garcia@gmail.com',
+    doctor: 'Dr. Sarah Jenkins, MD',
+    department: 'Cardiology & Heart Care',
+    date: new Date().toISOString().split('T')[0],
+    timeSlot: '11:15 AM',
+    status: 'Waiting',
+    type: 'Chest Pain Evaluation',
+    priority: 'Emergency',
+    age: 42,
+    gender: 'Female',
+    vitals: {
+      bloodPressure: '135 / 88 mmHg',
+      heartRate: '88 BPM',
+      spo2: '97% SpO2',
+      temperature: '99.1 °F'
+    },
+    reason: 'Acute retrosternal discomfort after exertion',
+    createdAt: new Date().toISOString()
+  },
+  {
+    _id: 'mem-apt-1104',
+    tokenNumber: 'OPD-1104',
+    patientId: 'PT-9803',
+    patientName: 'David Thorne',
+    patientEmail: 'david.thorne@yahoo.com',
+    doctor: 'Dr. Sarah Jenkins, MD',
+    department: 'Cardiology & Heart Care',
+    date: new Date().toISOString().split('T')[0],
     timeSlot: '02:00 PM',
     status: 'Upcoming',
-    type: 'Follow-up Checkup',
+    type: 'Routine ECG Check',
+    priority: 'Routine',
+    age: 58,
+    gender: 'Male',
+    vitals: {
+      bloodPressure: '118 / 76 mmHg',
+      heartRate: '68 BPM',
+      spo2: '98% SpO2',
+      temperature: '98.6 °F'
+    },
+    reason: 'Annual preventive cardiovascular checkup',
     createdAt: new Date().toISOString()
   },
   {
     _id: 'mem-apt-0980',
     tokenNumber: 'OPD-0980',
-    patientId: 'PT-9801',
-    patientName: 'Alexander Wright',
-    patientEmail: 'patient@careplus-hms.com',
-    doctor: 'Dr. Emily Rodriguez, MD',
-    department: 'Pediatrics & Child Health',
+    patientId: 'PT-9804',
+    patientName: 'Eleanor Vance',
+    patientEmail: 'eleanor.vance@gmail.com',
+    doctor: 'Dr. Sarah Jenkins, MD',
+    department: 'Cardiology & Heart Care',
     date: '2026-08-20',
     timeSlot: '11:00 AM',
     status: 'Completed',
-    type: 'Routine Checkup',
+    type: 'Post-Op Cardiac Followup',
+    priority: 'Normal',
+    age: 61,
+    gender: 'Female',
+    vitals: {
+      bloodPressure: '122 / 82 mmHg',
+      heartRate: '70 BPM',
+      spo2: '99% SpO2',
+      temperature: '98.5 °F'
+    },
+    reason: 'Post-CABG 30-day evaluation',
     createdAt: new Date().toISOString()
   }
 ];
@@ -61,12 +115,14 @@ const calculateStats = (aptList) => {
 // @access  Private (Patient / Receptionist)
 export const createAppointment = async (req, res, next) => {
   try {
-    const { doctor, department, date, timeSlot, type, reason, patientName, patientEmail, phone } = req.body;
+    const { doctor, department, date, timeSlot, type, reason, patientName, patientEmail, status } = req.body;
 
-    const email = req.user?.email || patientEmail || 'patient@careplus-hms.com';
-    const name = req.user?.name || patientName || 'Patient';
-    const pId = req.user?.patientId || req.user?._id || 'PT-9801';
+    const isStaff = ['receptionist', 'admin'].includes(req.user?.role);
+    const email = isStaff ? (patientEmail || 'patient@careplus-hms.com') : (req.user?.email || patientEmail || 'patient@careplus-hms.com');
+    const name = isStaff ? (patientName || 'Patient') : (req.user?.name || patientName || 'Patient');
+    const pId = isStaff ? (req.body.patientId || 'PT-' + Math.floor(1000 + Math.random() * 9000)) : (req.user?.patientId || req.user?._id || 'PT-9801');
     const tokenNumber = 'OPD-' + Math.floor(1000 + Math.random() * 9000);
+    const appointmentStatus = isStaff && status ? status : 'Upcoming';
 
     try {
       const appointment = await Appointment.create({
@@ -81,7 +137,7 @@ export const createAppointment = async (req, res, next) => {
         tokenNumber,
         type: type || 'OPD Consultation',
         reason: reason || '',
-        status: 'Upcoming'
+        status: appointmentStatus
       });
 
       return res.status(201).json({
@@ -103,7 +159,7 @@ export const createAppointment = async (req, res, next) => {
         timeSlot,
         type: type || 'OPD Consultation',
         reason: reason || '',
-        status: 'Upcoming',
+        status: appointmentStatus,
         createdAt: new Date().toISOString()
       };
       memoryAppointments.unshift(newMemApt);
@@ -212,7 +268,7 @@ export const getAllAppointments = async (req, res, next) => {
 export const updateAppointmentStatus = async (req, res, next) => {
   try {
     const { id } = req.params;
-    const { status, date, timeSlot } = req.body;
+    const { status, date, timeSlot, vitals, priority, reason } = req.body;
 
     // DB Update
     try {
@@ -227,6 +283,9 @@ export const updateAppointmentStatus = async (req, res, next) => {
         if (status) appointment.status = status;
         if (date) appointment.date = date;
         if (timeSlot) appointment.timeSlot = timeSlot;
+        if (vitals) appointment.vitals = { ...appointment.vitals, ...vitals };
+        if (priority) appointment.priority = priority;
+        if (reason) appointment.reason = reason;
 
         const updated = await appointment.save();
 
@@ -236,6 +295,9 @@ export const updateAppointmentStatus = async (req, res, next) => {
           if (status) memoryAppointments[memIndex].status = status;
           if (date) memoryAppointments[memIndex].date = date;
           if (timeSlot) memoryAppointments[memIndex].timeSlot = timeSlot;
+          if (vitals) memoryAppointments[memIndex].vitals = { ...memoryAppointments[memIndex].vitals, ...vitals };
+          if (priority) memoryAppointments[memIndex].priority = priority;
+          if (reason) memoryAppointments[memIndex].reason = reason;
         }
 
         return res.json({
@@ -252,6 +314,9 @@ export const updateAppointmentStatus = async (req, res, next) => {
       if (status) memoryAppointments[memIndex].status = status;
       if (date) memoryAppointments[memIndex].date = date;
       if (timeSlot) memoryAppointments[memIndex].timeSlot = timeSlot;
+      if (vitals) memoryAppointments[memIndex].vitals = { ...memoryAppointments[memIndex].vitals, ...vitals };
+      if (priority) memoryAppointments[memIndex].priority = priority;
+      if (reason) memoryAppointments[memIndex].reason = reason;
 
       return res.json({
         success: true,
