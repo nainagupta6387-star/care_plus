@@ -61,11 +61,11 @@ export const createAppointment = async (appointmentData) => {
   return data;
 };
 
-export const updateAppointmentStatus = async ({ id, status, date, timeSlot }) => {
+export const updateAppointmentStatus = async ({ id, status, date, timeSlot, vitals, priority, reason }) => {
   const res = await fetch(`${API_URL}/appointments/${id}/status`, {
     method: 'PUT',
     headers: getAuthHeaders(),
-    body: JSON.stringify({ status, date, timeSlot })
+    body: JSON.stringify({ status, date, timeSlot, vitals, priority, reason })
   });
   const data = await res.json();
   if (!res.ok) throw new Error(data.message || 'Failed to update status');

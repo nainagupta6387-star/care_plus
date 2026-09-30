@@ -54,6 +54,36 @@ export const memoryPatients = [
   }
 ];
 
+export const getDoctors = async (req, res, next) => {
+  try {
+    let databaseDoctors = [];
+    try {
+      databaseDoctors = await Patient.find({ role: 'doctor' }).select('_id patientId name email phone department specialty');
+    } catch (error) {
+      if (Patient.db.readyState === 1) return next(error);
+    }
+
+    const doctorsByEmail = new Map();
+    [...databaseDoctors, ...memoryPatients.filter((patient) => patient.role === 'doctor')].forEach((doctor) => {
+      if (!doctorsByEmail.has(doctor.email)) {
+        doctorsByEmail.set(doctor.email, {
+          id: String(doctor._id || doctor.id),
+          patientId: doctor.patientId,
+          name: doctor.name,
+          email: doctor.email,
+          phone: doctor.phone || '',
+          department: doctor.department || '',
+          specialty: doctor.specialty || '',
+        });
+      }
+    });
+
+    return res.json({ success: true, doctors: Array.from(doctorsByEmail.values()) });
+  } catch (error) {
+    return next(error);
+  }
+};
+
 // Helper: Generate JWT Token
 const generateToken = (id, role) => {
   return jwt.sign(

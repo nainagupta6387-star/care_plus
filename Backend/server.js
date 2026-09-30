@@ -8,6 +8,7 @@ import patientRoutes from './routes/patientRoutes.js';
 import appointmentRoutes from './routes/appointmentRoutes.js';
 import billingRoutes from './routes/billingRoutes.js';
 import prescriptionRoutes from './routes/prescriptionRoutes.js';
+import admissionRoutes from './routes/admissionRoutes.js';
 import { errorHandler } from './middleware/errorMiddleware.js';
 
 const __filename = fileURLToPath(import.meta.url);
@@ -15,9 +16,6 @@ const __dirname = path.dirname(__filename);
 
 // Load Environment Variables
 dotenv.config();
-
-// Connect Database
-connectDB();
 
 const app = express();
 
@@ -52,6 +50,7 @@ app.use('/api/patient', patientRoutes);
 app.use('/api/appointments', appointmentRoutes);
 app.use('/api/billing', billingRoutes);
 app.use('/api/prescriptions', prescriptionRoutes);
+app.use('/api/admissions', admissionRoutes);
 
 // Global Error Handler
 app.use(errorHandler);
@@ -74,4 +73,4 @@ const startServer = (port) => {
   });
 };
 
-startServer(DEFAULT_PORT);
+connectDB().finally(() => startServer(DEFAULT_PORT));

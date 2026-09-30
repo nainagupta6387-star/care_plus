@@ -3,3 +3,4 @@ export * from './useAuth';
 export * from './useAppointments';
 export * from './useBilling';
 export * from './usePrescriptions';
+export * from './useAdmissions';

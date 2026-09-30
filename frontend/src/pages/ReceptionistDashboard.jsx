@@ -19,6 +19,7 @@ import {
   Zap,
   RefreshCw,
   ClipboardList,
+  BedDouble,
 } from "lucide-react";
 import { logoutUser } from "../api";
 import {
@@ -29,6 +30,12 @@ import {
   useUpdateInvoiceStatusMutation,
   useCreateAppointmentMutation,
   useProfileQuery,
+  useAdmissionsQuery,
+  useIcuBedsQuery,
+  useDoctorsQuery,
+  useCreateAdmissionMutation,
+  useUpdateAdmissionStatusMutation,
+  useAssignIcuBedMutation,
 } from "../hooks";
 
 const STATUS_OPTIONS = [
@@ -39,6 +46,31 @@ const STATUS_OPTIONS = [
   "Rescheduled",
   "Cancelled",
 ];
+
+const createEmergencyDraft = () => {
+  const now = new Date();
+  now.setMinutes(now.getMinutes() - now.getTimezoneOffset());
+  return {
+    patientName: "",
+    unknownPatient: false,
+    age: "",
+    gender: "",
+    contactNumber: "",
+    emergencyType: "Accident",
+    emergencyDescription: "",
+    arrivalAt: now.toISOString().slice(0, 16),
+    priority: "Emergency",
+    bloodPressure: "",
+    heartRate: "",
+    temperature: "",
+    spo2: "",
+    icuRequired: "no",
+    doctorId: "",
+    icuBed: "",
+  };
+};
+
+const EMERGENCY_STATUSES = ["Waiting", "Under Treatment", "Stabilized", "ICU", "Admitted", "Completed"];
 
 const ReceptionistDashboard = () => {
   const navigate = useNavigate();
@@ -77,6 +109,9 @@ const ReceptionistDashboard = () => {
   const [walkinDept, setWalkinDept] = useState("Cardiology & Heart Care");
   const [walkinDoc, setWalkinDoc] = useState("Dr. Sarah Jenkins, MD");
   const [generatedToken, setGeneratedToken] = useState(null);
+  const [emergencyModalOpen, setEmergencyModalOpen] = useState(false);
+  const [emergencyDraft, setEmergencyDraft] = useState(createEmergencyDraft);
+  const [selectedIcuBeds, setSelectedIcuBeds] = useState({});
 
   // TanStack Query Hooks for Real-Time Backend Sync & Cache Management
   const { data: fetchedAppointments, isLoading: isAptsLoading, isError: isAptsError } =
@@ -89,6 +124,15 @@ const ReceptionistDashboard = () => {
   const createInvoiceMutation = useCreateInvoiceMutation();
   const updateInvoiceStatusMutation = useUpdateInvoiceStatusMutation();
   const createAppointmentMutation = useCreateAppointmentMutation();
+  const { data: admissions = [], isLoading: isAdmissionsLoading, isError: isAdmissionsError } = useAdmissionsQuery();
+  const { data: icuBedData, isLoading: isIcuBedsLoading, isError: isIcuBedsError } = useIcuBedsQuery();
+  const { data: emergencyDoctors = [], isLoading: isDoctorsLoading } = useDoctorsQuery();
+  const createAdmissionMutation = useCreateAdmissionMutation();
+  const updateAdmissionStatusMutation = useUpdateAdmissionStatusMutation();
+  const assignIcuBedMutation = useAssignIcuBedMutation();
+
+  const icuBeds = icuBedData?.beds || [];
+  const availableIcuBeds = icuBeds.filter((bed) => bed.status === "Available");
 
   const appointments = useMemo(
     () => (Array.isArray(fetchedAppointments) ? fetchedAppointments : []),
@@ -200,6 +244,91 @@ const ReceptionistDashboard = () => {
       showFeedback("success", "Walk-in patient added to the queue.");
     } catch (err) {
       showFeedback("error", err.message || "Walk-in check-in failed.");
+    }
+  };
+
+  const handleEmergencyFieldChange = (event) => {
+    const { name, value, type, checked } = event.target;
+    setEmergencyDraft((current) => ({
+      ...current,
+      [name]: type === "checkbox" ? checked : value,
+    }));
+  };
+
+  const handleCreateEmergency = async (event) => {
+    event.preventDefault();
+    const age = emergencyDraft.age.trim();
+    if (!emergencyDraft.unknownPatient && !emergencyDraft.patientName.trim()) {
+      showFeedback("error", "Enter a patient name or select Unknown Patient.");
+      return;
+    }
+    if (age && (!/^\d+$/.test(age) || Number(age) > 120)) {
+      showFeedback("error", "Age must be a whole number between 0 and 120.");
+      return;
+    }
+    if (emergencyDraft.contactNumber && !/^[+()\-\s\d.]{7,20}$/.test(emergencyDraft.contactNumber.trim())) {
+      showFeedback("error", "Enter a valid contact number.");
+      return;
+    }
+    const doctor = emergencyDoctors.find((item) => item.id === emergencyDraft.doctorId);
+    if (!doctor) {
+      showFeedback("error", "Select an available doctor.");
+      return;
+    }
+
+    try {
+      await createAdmissionMutation.mutateAsync({
+        patientName: emergencyDraft.patientName.trim(),
+        unknownPatient: emergencyDraft.unknownPatient,
+        age: age ? Number(age) : undefined,
+        gender: emergencyDraft.gender,
+        contactNumber: emergencyDraft.contactNumber.trim(),
+        emergencyType: emergencyDraft.emergencyType,
+        emergencyDescription: emergencyDraft.emergencyDescription.trim(),
+        arrivalAt: new Date(emergencyDraft.arrivalAt).toISOString(),
+        priority: emergencyDraft.priority,
+        vitals: {
+          bloodPressure: emergencyDraft.bloodPressure.trim(),
+          heartRate: emergencyDraft.heartRate.trim(),
+          temperature: emergencyDraft.temperature.trim(),
+          spo2: emergencyDraft.spo2.trim(),
+        },
+        icuRequired: emergencyDraft.icuRequired === "yes",
+        doctorId: doctor.id,
+        doctorEmail: doctor.email,
+        ...(emergencyDraft.icuRequired === "yes" && emergencyDraft.icuBed
+          ? { icuBed: emergencyDraft.icuBed }
+          : {}),
+      });
+      setEmergencyModalOpen(false);
+      setEmergencyDraft(createEmergencyDraft());
+      showFeedback("success", "Emergency case added to the queue.");
+    } catch (err) {
+      showFeedback("error", err.message || "Emergency case could not be created.");
+    }
+  };
+
+  const handleEmergencyStatusChange = async (id, status) => {
+    try {
+      await updateAdmissionStatusMutation.mutateAsync({ id, status });
+      showFeedback("success", "Emergency status updated.");
+    } catch (err) {
+      showFeedback("error", err.message || "Emergency status could not be updated.");
+    }
+  };
+
+  const handleAssignIcuBed = async (id) => {
+    const bedId = selectedIcuBeds[id];
+    if (!bedId) {
+      showFeedback("error", "Select an available ICU bed first.");
+      return;
+    }
+    try {
+      await assignIcuBedMutation.mutateAsync({ id, bedId });
+      setSelectedIcuBeds((current) => ({ ...current, [id]: "" }));
+      showFeedback("success", `ICU bed ${bedId} reserved for the patient.`);
+    } catch (err) {
+      showFeedback("error", err.message || "ICU bed could not be assigned.");
     }
   };
 
@@ -436,6 +565,18 @@ const ReceptionistDashboard = () => {
           >
             <Plus className="w-4 h-4" />
             <span>Rapid Walk-in Check-in</span>
+          </button>
+
+          <button
+            onClick={() => setActiveTab("emergency")}
+            className={`flex items-center space-x-2 px-5 py-2.5 rounded-xl font-bold text-xs transition-all ${
+              activeTab === "emergency"
+                ? "bg-gradient-to-r from-blue-600 to-teal-600 text-white shadow-md shadow-blue-500/20"
+                : "text-slate-600 hover:bg-slate-100 hover:text-slate-900"
+            }`}
+          >
+            <Activity className="w-4 h-4" />
+            <span>Emergency &amp; Critical Patient ({admissions.length})</span>
           </button>
 
           <button
@@ -984,7 +1125,147 @@ const ReceptionistDashboard = () => {
           </div>
         )}
 
-        {/* TAB 5: RECEPTIONIST PROFILE */}
+        {/* EMERGENCY & CRITICAL PATIENT QUEUE */}
+        {activeTab === "emergency" && (
+          <div className="space-y-6 animate-in fade-in duration-200">
+            <div className="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900">Emergency Queue</h2>
+                <p className="text-xs text-slate-500 mt-1">Emergency cases and ICU assignments sync with the doctor console.</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEmergencyModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-blue-600 text-white text-xs font-bold hover:bg-blue-700 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+                Create Emergency Case
+              </button>
+            </div>
+
+            {isAdmissionsError && (
+              <div className="rounded-xl border border-rose-200 bg-rose-50 px-4 py-3 text-sm font-semibold text-rose-700">
+                Emergency queue could not be loaded. Check the backend connection and try again.
+              </div>
+            )}
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between">
+                <h3 className="font-extrabold text-sm text-slate-900">Active and recent cases</h3>
+                <span className="text-[11px] text-slate-500">{admissions.length} cases</span>
+              </div>
+              {isAdmissionsLoading ? (
+                <div className="p-8 text-center text-sm text-slate-500">Loading emergency cases...</div>
+              ) : admissions.length === 0 ? (
+                <div className="p-10 text-center">
+                  <Activity className="w-8 h-8 mx-auto text-slate-300 mb-2" />
+                  <p className="text-sm font-semibold text-slate-700">No emergency cases yet</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="w-full min-w-[1050px] text-left text-xs">
+                    <thead className="bg-slate-50 text-[10px] uppercase text-slate-500">
+                      <tr>
+                        <th className="px-4 py-3 font-bold">Patient / Type</th>
+                        <th className="px-4 py-3 font-bold">Priority</th>
+                        <th className="px-4 py-3 font-bold">Arrival</th>
+                        <th className="px-4 py-3 font-bold">Doctor</th>
+                        <th className="px-4 py-3 font-bold">ICU</th>
+                        <th className="px-4 py-3 font-bold">Status</th>
+                        <th className="px-4 py-3 font-bold">Bed Assignment</th>
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-slate-100">
+                      {admissions.map((admission) => (
+                        <tr key={admission._id} className="align-top hover:bg-slate-50/70">
+                          <td className="px-4 py-3">
+                            <p className="font-bold text-slate-900">{admission.unknownPatient ? "Unknown Patient" : admission.patientName}</p>
+                            <p className="text-[11px] text-slate-500 mt-1">{admission.emergencyType}</p>
+                            <p className="text-[11px] text-slate-500 mt-1 max-w-xs">{admission.emergencyDescription}</p>
+                          </td>
+                          <td className="px-4 py-3">
+                            <span className={`inline-flex rounded-md px-2 py-1 text-[10px] font-extrabold ${
+                              admission.priority === "Emergency" ? "bg-rose-100 text-rose-700" : admission.priority === "High" ? "bg-amber-100 text-amber-800" : "bg-slate-100 text-slate-700"
+                            }`}>{admission.priority}</span>
+                          </td>
+                          <td className="px-4 py-3 text-slate-600">{new Date(admission.arrivalAt).toLocaleString()}</td>
+                          <td className="px-4 py-3 font-semibold text-slate-700">{admission.doctorName}</td>
+                          <td className="px-4 py-3 text-slate-600">
+                            {admission.icuRequired ? `Yes${admission.icuBed ? ` · ${admission.icuBed} (${admission.icuStatus})` : " · Bed needed"}` : "No"}
+                          </td>
+                          <td className="px-4 py-3">
+                            <select
+                              aria-label={`Status for ${admission.patientName}`}
+                              value={admission.status}
+                              onChange={(event) => handleEmergencyStatusChange(admission._id, event.target.value)}
+                              disabled={updateAdmissionStatusMutation.isPending}
+                              className="rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs font-semibold text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                            >
+                              {EMERGENCY_STATUSES.map((status) => <option key={status} value={status}>{status}</option>)}
+                            </select>
+                          </td>
+                          <td className="px-4 py-3">
+                            {admission.icuRequired && !admission.icuBed ? (
+                              <div className="flex min-w-52 items-center gap-2">
+                                <select
+                                  aria-label={`ICU bed for ${admission.patientName}`}
+                                  value={selectedIcuBeds[admission._id] || ""}
+                                  onChange={(event) => setSelectedIcuBeds((current) => ({ ...current, [admission._id]: event.target.value }))}
+                                  className="min-w-0 flex-1 rounded-lg border border-slate-200 bg-white px-2 py-1.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                >
+                                  <option value="">Available bed</option>
+                                  {availableIcuBeds.map((bed) => <option key={bed.bedId} value={bed.bedId}>{bed.bedId}</option>)}
+                                </select>
+                                <button
+                                  type="button"
+                                  disabled={assignIcuBedMutation.isPending || availableIcuBeds.length === 0}
+                                  onClick={() => handleAssignIcuBed(admission._id)}
+                                  className="rounded-lg bg-blue-600 px-2.5 py-1.5 text-[10px] font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50"
+                                >Assign</button>
+                              </div>
+                            ) : admission.icuBed ? (
+                              <span className="font-semibold text-slate-700">{admission.icuBed} · {admission.icuStatus}</span>
+                            ) : <span className="text-slate-400">Not required</span>}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            <div className="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+              <div className="px-5 py-4 border-b border-slate-100 flex items-center justify-between gap-3">
+                <div>
+                  <h3 className="font-extrabold text-sm text-slate-900">ICU Bed Status</h3>
+                  <p className="text-[11px] text-slate-500 mt-1">{icuBedData?.demo ? "Configurable demo beds · set ICU_BED_IDS on the backend to use your configured bed identifiers." : "Configured bed identifiers and current assignments."}</p>
+                </div>
+                {isIcuBedsLoading && <RefreshCw className="w-4 h-4 animate-spin text-slate-400" />}
+              </div>
+              {isIcuBedsError ? (
+                <p className="p-5 text-sm text-rose-700">ICU bed status could not be loaded.</p>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-3 p-4">
+                  {icuBeds.map((bed) => (
+                    <div key={bed.bedId} className="flex items-start justify-between gap-3 rounded-xl border border-slate-200 p-4">
+                      <div className="flex items-start gap-3">
+                        <BedDouble className="w-4 h-4 mt-0.5 text-blue-600" />
+                        <div>
+                          <p className="text-sm font-bold text-slate-900">{bed.bedId}</p>
+                          {bed.patientName && <p className="text-xs text-slate-500 mt-1">{bed.patientName} · {bed.doctorName}</p>}
+                        </div>
+                      </div>
+                      <span className={`rounded-md px-2 py-1 text-[10px] font-bold ${bed.status === "Available" ? "bg-emerald-100 text-emerald-700" : bed.status === "Reserved" ? "bg-amber-100 text-amber-800" : "bg-blue-100 text-blue-800"}`}>{bed.status}</span>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* TAB: RECEPTIONIST PROFILE */}
         {activeTab === "profile" && (
           <div className="max-w-2xl mx-auto space-y-6 animate-in fade-in duration-200">
             <div className="bg-white p-8 rounded-3xl border border-slate-200/80 shadow-sm space-y-6">
@@ -1048,6 +1329,119 @@ const ReceptionistDashboard = () => {
           </div>
         )}
       </div>
+
+      {emergencyModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/65 p-4 backdrop-blur-sm">
+          <form onSubmit={handleCreateEmergency} className="max-h-[92vh] w-full max-w-3xl space-y-5 overflow-y-auto rounded-2xl border border-slate-200 bg-white p-5 shadow-2xl sm:p-7">
+            <div className="flex items-start justify-between gap-4 border-b border-slate-100 pb-4">
+              <div>
+                <h2 className="text-lg font-extrabold text-slate-900">Create Emergency Case</h2>
+                <p className="mt-1 text-xs text-slate-500">Record only the information currently available.</p>
+              </div>
+              <button type="button" onClick={() => setEmergencyModalOpen(false)} aria-label="Close emergency form" className="rounded-lg p-2 text-slate-500 hover:bg-slate-100 hover:text-slate-800">
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+
+            {feedback.message && (
+              <div role="alert" className={`rounded-xl border px-3 py-2.5 text-xs font-semibold ${feedback.type === "error" ? "border-rose-200 bg-rose-50 text-rose-700" : "border-emerald-200 bg-emerald-50 text-emerald-700"}`}>
+                {feedback.message}
+              </div>
+            )}
+
+            <label className="flex items-center gap-2 rounded-xl border border-slate-200 bg-slate-50 px-3 py-2.5 text-xs font-semibold text-slate-700">
+              <input type="checkbox" name="unknownPatient" checked={emergencyDraft.unknownPatient} onChange={handleEmergencyFieldChange} className="h-4 w-4 accent-blue-600" />
+              Unknown Patient
+            </label>
+
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+              <div>
+                <label htmlFor="emergency-patient-name" className="mb-1.5 block text-[11px] font-bold text-slate-600">Patient Name</label>
+                <input id="emergency-patient-name" name="patientName" value={emergencyDraft.patientName} onChange={handleEmergencyFieldChange} disabled={emergencyDraft.unknownPatient} required={!emergencyDraft.unknownPatient} placeholder={emergencyDraft.unknownPatient ? "Recorded as Unknown Patient" : "Full name"} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs disabled:bg-slate-100 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label htmlFor="emergency-age" className="mb-1.5 block text-[11px] font-bold text-slate-600">Age</label>
+                <input id="emergency-age" name="age" type="number" min="0" max="120" step="1" value={emergencyDraft.age} onChange={handleEmergencyFieldChange} placeholder="Optional" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label htmlFor="emergency-gender" className="mb-1.5 block text-[11px] font-bold text-slate-600">Gender</label>
+                <select id="emergency-gender" name="gender" value={emergencyDraft.gender} onChange={handleEmergencyFieldChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="">Not provided</option><option>Female</option><option>Male</option><option>Other</option><option>Not Specified</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="emergency-contact" className="mb-1.5 block text-[11px] font-bold text-slate-600">Contact Number</label>
+                <input id="emergency-contact" name="contactNumber" type="tel" pattern="[+()\-\s\d.]{7,20}" value={emergencyDraft.contactNumber} onChange={handleEmergencyFieldChange} placeholder="Optional" className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label htmlFor="emergency-type" className="mb-1.5 block text-[11px] font-bold text-slate-600">Emergency Type</label>
+                <select id="emergency-type" name="emergencyType" required value={emergencyDraft.emergencyType} onChange={handleEmergencyFieldChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Accident</option><option>Critical Emergency</option><option>Other Emergency</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="emergency-arrival" className="mb-1.5 block text-[11px] font-bold text-slate-600">Arrival Date &amp; Time</label>
+                <input id="emergency-arrival" name="arrivalAt" type="datetime-local" required value={emergencyDraft.arrivalAt} onChange={handleEmergencyFieldChange} className="w-full rounded-xl border border-slate-200 px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              </div>
+              <div>
+                <label htmlFor="emergency-priority" className="mb-1.5 block text-[11px] font-bold text-slate-600">Priority</label>
+                <select id="emergency-priority" name="priority" required value={emergencyDraft.priority} onChange={handleEmergencyFieldChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option>Emergency</option><option>High</option><option>Normal</option>
+                </select>
+              </div>
+              <div>
+                <label htmlFor="emergency-doctor" className="mb-1.5 block text-[11px] font-bold text-slate-600">Assign Doctor</label>
+                <select id="emergency-doctor" name="doctorId" required value={emergencyDraft.doctorId} onChange={handleEmergencyFieldChange} disabled={isDoctorsLoading || emergencyDoctors.length === 0} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:bg-slate-100">
+                  <option value="">{isDoctorsLoading ? "Loading doctors..." : "Select doctor"}</option>
+                  {emergencyDoctors.map((doctor) => <option key={doctor.id} value={doctor.id}>{doctor.name}{doctor.department ? ` · ${doctor.department}` : ""}</option>)}
+                </select>
+                {!isDoctorsLoading && emergencyDoctors.length === 0 && <p className="mt-1 text-[11px] text-rose-600">No doctor accounts are available to assign.</p>}
+              </div>
+              <div>
+                <label htmlFor="emergency-icu" className="mb-1.5 block text-[11px] font-bold text-slate-600">ICU Required</label>
+                <select id="emergency-icu" name="icuRequired" value={emergencyDraft.icuRequired} onChange={handleEmergencyFieldChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                  <option value="no">No</option><option value="yes">Yes</option>
+                </select>
+              </div>
+              {emergencyDraft.icuRequired === "yes" && (
+                <div>
+                  <label htmlFor="emergency-icu-bed" className="mb-1.5 block text-[11px] font-bold text-slate-600">Reserve Available ICU Bed (Optional)</label>
+                  <select id="emergency-icu-bed" name="icuBed" value={emergencyDraft.icuBed} onChange={handleEmergencyFieldChange} className="w-full rounded-xl border border-slate-200 bg-white px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500">
+                    <option value="">Assign later from queue</option>
+                    {availableIcuBeds.map((bed) => <option key={bed.bedId} value={bed.bedId}>{bed.bedId}</option>)}
+                  </select>
+                  {availableIcuBeds.length === 0 && <p className="mt-1 text-[11px] text-slate-500">No beds are currently available; create the case and assign a bed when one becomes available.</p>}
+                </div>
+              )}
+            </div>
+
+            <div>
+              <label htmlFor="emergency-description" className="mb-1.5 block text-[11px] font-bold text-slate-600">Emergency Description / Reason</label>
+              <textarea id="emergency-description" name="emergencyDescription" required rows="3" value={emergencyDraft.emergencyDescription} onChange={handleEmergencyFieldChange} className="w-full resize-y rounded-xl border border-slate-200 px-3 py-2.5 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" placeholder="Describe the information provided at intake" />
+            </div>
+
+            <fieldset className="space-y-3 rounded-xl border border-slate-200 p-4">
+              <legend className="px-1 text-[11px] font-bold text-slate-600">Vitals (optional)</legend>
+              <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                {[["bloodPressure", "BP", "e.g. 120/80"], ["heartRate", "Heart Rate", "e.g. 72 bpm"], ["temperature", "Temperature", "e.g. 37 °C"], ["spo2", "SpO2", "e.g. 98%"]].map(([name, label, placeholder]) => (
+                  <div key={name}>
+                    <label htmlFor={`emergency-${name}`} className="mb-1 block text-[10px] font-semibold text-slate-500">{label}</label>
+                    <input id={`emergency-${name}`} name={name} value={emergencyDraft[name]} onChange={handleEmergencyFieldChange} placeholder={placeholder} className="w-full rounded-lg border border-slate-200 px-2.5 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-blue-500" />
+                  </div>
+                ))}
+              </div>
+            </fieldset>
+
+            <div className="flex flex-col-reverse gap-2 border-t border-slate-100 pt-4 sm:flex-row sm:justify-end">
+              <button type="button" onClick={() => setEmergencyModalOpen(false)} className="rounded-xl bg-slate-100 px-4 py-2.5 text-xs font-bold text-slate-700 hover:bg-slate-200">Cancel</button>
+              <button type="submit" disabled={createAdmissionMutation.isPending || isDoctorsLoading || emergencyDoctors.length === 0} className="inline-flex items-center justify-center gap-2 rounded-xl bg-blue-600 px-4 py-2.5 text-xs font-bold text-white hover:bg-blue-700 disabled:cursor-not-allowed disabled:opacity-50">
+                {createAdmissionMutation.isPending && <RefreshCw className="h-3.5 w-3.5 animate-spin" />}
+                Add to Emergency Queue
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
 
       {/* RESCHEDULE APPOINTMENT MODAL */}
       {editingApt && (

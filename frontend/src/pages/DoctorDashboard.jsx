@@ -35,6 +35,9 @@ import {
   usePatientPrescriptionsQuery,
   useCreatePrescriptionMutation,
   useUpdateProfileMutation,
+  useAdmissionsQuery,
+  useUpdateAdmissionStatusMutation,
+  useUpdateIcuStatusMutation,
 } from '../hooks';
 import { logoutUser } from '../api';
 
@@ -140,6 +143,7 @@ const DoctorDashboard = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [queueFilter, setQueueFilter] = useState('All'); // 'All', 'Waiting', 'In Consultation', 'Completed'
   const [selectedPatientId, setSelectedPatientId] = useState(null);
+  const [selectedEmergencyId, setSelectedEmergencyId] = useState(null);
 
   // E-Prescription Form State
   const [rxDrug, setRxDrug] = useState('');
@@ -174,6 +178,9 @@ const DoctorDashboard = () => {
   const updateStatusMutation = useUpdateAppointmentStatusMutation();
   const createRxMutation = useCreatePrescriptionMutation();
   const updateProfileMutation = useUpdateProfileMutation();
+  const { data: emergencyAdmissions = [], isLoading: isEmergencyLoading, isError: isEmergencyError } = useAdmissionsQuery();
+  const updateEmergencyStatusMutation = useUpdateAdmissionStatusMutation();
+  const updateIcuStatusMutation = useUpdateIcuStatusMutation();
 
   // Unified appointments list with fallback
   const appointments = useMemo(() => {
@@ -362,6 +369,27 @@ const DoctorDashboard = () => {
   const waitingCount = useMemo(() => {
     return appointments.filter((a) => ['Waiting', 'Upcoming', 'Confirmed'].includes(a.status)).length;
   }, [appointments]);
+  const selectedEmergency = emergencyAdmissions.find((admission) => admission._id === selectedEmergencyId) || emergencyAdmissions[0];
+
+  const handleEmergencyStatusChange = async (status) => {
+    if (!selectedEmergency) return;
+    try {
+      await updateEmergencyStatusMutation.mutateAsync({ id: selectedEmergency._id, status });
+      setStatusFeedback(`Emergency status updated to "${status}"`);
+    } catch (err) {
+      setStatusFeedback(`Emergency status update failed: ${err.message}`);
+    }
+  };
+
+  const handleIcuStatusChange = async (icuStatus) => {
+    if (!selectedEmergency) return;
+    try {
+      await updateIcuStatusMutation.mutateAsync({ id: selectedEmergency._id, icuStatus });
+      setStatusFeedback(`ICU status updated to "${icuStatus}"`);
+    } catch (err) {
+      setStatusFeedback(`ICU status update failed: ${err.message}`);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col font-sans text-slate-800">
@@ -536,12 +564,12 @@ const DoctorDashboard = () => {
           
           {/* Status Feedback Toast */}
           {statusFeedback && (
-            <div className="p-3.5 rounded-2xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-bold flex items-center justify-between shadow-sm animate-fade-in">
+            <div className={`p-3.5 rounded-2xl border text-xs font-bold flex items-center justify-between shadow-sm animate-fade-in ${/error|failed|could not/i.test(statusFeedback) ? 'bg-rose-50 border-rose-200 text-rose-800' : 'bg-emerald-50 border-emerald-200 text-emerald-800'}`}>
               <div className="flex items-center space-x-2">
-                <CheckCircle2 className="w-4 h-4 text-emerald-600" />
+                {/error|failed|could not/i.test(statusFeedback) ? <AlertCircle className="w-4 h-4 text-rose-600" /> : <CheckCircle2 className="w-4 h-4 text-emerald-600" />}
                 <span>{statusFeedback}</span>
               </div>
-              <button onClick={() => setStatusFeedback('')} className="text-emerald-700 hover:text-emerald-900">
+              <button onClick={() => setStatusFeedback('')} className="opacity-80 hover:opacity-100">
                 <X className="w-3.5 h-3.5" />
               </button>
             </div>
@@ -833,6 +861,97 @@ const DoctorDashboard = () => {
         </div>
 
       </div>
+
+      <section className="max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 pb-8">
+        <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white shadow-sm">
+          <div className="flex flex-col gap-2 border-b border-slate-100 px-5 py-4 sm:flex-row sm:items-center sm:justify-between">
+            <div>
+              <h3 className="text-base font-extrabold text-slate-900">Emergency Patients</h3>
+              <p className="mt-1 text-xs text-slate-500">Cases assigned to your doctor account.</p>
+            </div>
+            <span className="w-fit rounded-lg bg-amber-50 px-2.5 py-1 text-[11px] font-bold text-amber-800">{emergencyAdmissions.length} assigned</span>
+          </div>
+
+          {isEmergencyError ? (
+            <div className="p-5 text-sm font-semibold text-rose-700">Emergency cases could not be loaded. Check the backend connection.</div>
+          ) : isEmergencyLoading ? (
+            <div className="p-5 text-sm text-slate-500">Loading assigned emergency cases...</div>
+          ) : emergencyAdmissions.length === 0 ? (
+            <div className="p-8 text-center">
+              <Activity className="mx-auto mb-2 h-7 w-7 text-slate-300" />
+              <p className="text-sm font-semibold text-slate-700">No emergency patients assigned</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 divide-y divide-slate-100 lg:grid-cols-[minmax(240px,0.8fr)_minmax(0,1.6fr)] lg:divide-x lg:divide-y-0">
+              <div className="max-h-[480px] space-y-2 overflow-y-auto p-3">
+                {emergencyAdmissions.map((admission) => (
+                  <button
+                    key={admission._id}
+                    type="button"
+                    onClick={() => setSelectedEmergencyId(admission._id)}
+                    className={`w-full rounded-xl border p-3 text-left transition-colors ${selectedEmergency?._id === admission._id ? 'border-blue-300 bg-blue-50' : 'border-slate-200 hover:border-blue-200 hover:bg-slate-50'}`}
+                  >
+                    <span className="flex items-start justify-between gap-2">
+                      <span className="text-sm font-bold text-slate-900">{admission.unknownPatient ? 'Unknown Patient' : admission.patientName}</span>
+                      <span className={`shrink-0 rounded px-1.5 py-0.5 text-[9px] font-extrabold ${admission.priority === 'Emergency' ? 'bg-rose-100 text-rose-700' : admission.priority === 'High' ? 'bg-amber-100 text-amber-800' : 'bg-slate-100 text-slate-600'}`}>{admission.priority}</span>
+                    </span>
+                    <span className="mt-1 block text-[11px] text-slate-500">{admission.emergencyType} · {admission.status}</span>
+                    {admission.icuRequired && <span className="mt-1 inline-flex rounded bg-blue-50 px-1.5 py-0.5 text-[10px] font-semibold text-blue-700">ICU required{admission.icuBed ? ` · ${admission.icuBed}` : ''}</span>}
+                  </button>
+                ))}
+              </div>
+
+              {selectedEmergency && (
+                <div className="space-y-5 p-5">
+                  <div className="flex flex-col gap-3 border-b border-slate-100 pb-4 sm:flex-row sm:items-start sm:justify-between">
+                    <div>
+                      <p className="text-[10px] font-bold uppercase text-slate-500">{selectedEmergency.emergencyType} · Arrived {new Date(selectedEmergency.arrivalAt).toLocaleString()}</p>
+                      <h4 className="mt-1 text-lg font-extrabold text-slate-900">{selectedEmergency.unknownPatient ? 'Unknown Patient' : selectedEmergency.patientName}</h4>
+                      <p className="mt-1 text-xs text-slate-500">{selectedEmergency.age !== undefined ? `${selectedEmergency.age} years` : 'Age not recorded'}{selectedEmergency.gender ? ` · ${selectedEmergency.gender}` : ''}{selectedEmergency.contactNumber ? ` · ${selectedEmergency.contactNumber}` : ''}</p>
+                    </div>
+                    <label className="text-[10px] font-bold uppercase text-slate-500">
+                      Case Status
+                      <select value={selectedEmergency.status} onChange={(event) => handleEmergencyStatusChange(event.target.value)} disabled={updateEmergencyStatusMutation.isPending} className="mt-1 block min-w-40 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold normal-case text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                        {['Waiting', 'Under Treatment', 'Stabilized', 'ICU', 'Admitted', 'Completed'].map((status) => <option key={status}>{status}</option>)}
+                      </select>
+                    </label>
+                  </div>
+
+                  <div>
+                    <p className="mb-1 text-[10px] font-bold uppercase text-slate-500">Emergency Description</p>
+                    <p className="whitespace-pre-wrap text-sm text-slate-800">{selectedEmergency.emergencyDescription}</p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+                    {[["Blood Pressure", selectedEmergency.vitals?.bloodPressure], ["Heart Rate", selectedEmergency.vitals?.heartRate], ["Temperature", selectedEmergency.vitals?.temperature], ["SpO2", selectedEmergency.vitals?.spo2]].map(([label, value]) => (
+                      <div key={label} className="rounded-xl border border-slate-200 bg-slate-50 p-3">
+                        <p className="text-[9px] font-bold uppercase text-slate-500">{label}</p>
+                        <p className="mt-1 text-sm font-bold text-slate-900">{value || 'Not recorded'}</p>
+                      </div>
+                    ))}
+                  </div>
+
+                  <div className="flex flex-col gap-3 rounded-xl border border-slate-200 p-4 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs font-bold text-slate-800">ICU Requirement: {selectedEmergency.icuRequired ? 'Yes' : 'No'}</p>
+                      <p className="mt-1 text-xs text-slate-600">Bed: {selectedEmergency.icuBed || 'Not assigned'} · ICU status: {selectedEmergency.icuStatus || 'Not Assigned'}</p>
+                      {selectedEmergency.icuAdmissionTime && <p className="mt-1 text-[10px] text-slate-500">Assigned {new Date(selectedEmergency.icuAdmissionTime).toLocaleString()}</p>}
+                    </div>
+                    {selectedEmergency.icuBed && selectedEmergency.icuStatus !== 'Released' && (
+                      <label className="text-[10px] font-bold uppercase text-slate-500">
+                        ICU Bed Status
+                        <select value={selectedEmergency.icuStatus} onChange={(event) => handleIcuStatusChange(event.target.value)} disabled={updateIcuStatusMutation.isPending} className="mt-1 block min-w-36 rounded-lg border border-slate-200 bg-white px-2.5 py-2 text-xs font-semibold normal-case text-slate-700 focus:outline-none focus:ring-2 focus:ring-blue-500">
+                          <option value="Reserved">Reserved</option><option value="Occupied">Occupied</option><option value="Released">Released</option>
+                        </select>
+                      </label>
+                    )}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </section>
 
       {/* Vitals Update Modal */}
       {vitalsModalOpen && (
